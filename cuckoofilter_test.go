@@ -26,9 +26,18 @@ func TestInsertion(t *testing.T) {
 		i++
 		values = append(values, s)
 	}
-	fmt.Println(cf.count, i)
+
+	count := cf.GetCount()
+	if count != 235022 {
+		t.Errorf("Expected count = 235022, instead count != %d", count)
+	}
+
 	for _, v := range values {
 		cf.Delete(v)
 	}
-	fmt.Println(cf.count, i)
+
+	count = cf.GetCount()
+	if count != 0 {
+		t.Errorf("Expected count = 0, instead count != %d", count)
+	}
 }

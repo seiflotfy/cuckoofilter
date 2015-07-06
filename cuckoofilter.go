@@ -5,7 +5,7 @@ import "math/rand"
 const maxCuckooCount = 500
 
 /*
-CuckooFilter ...
+CuckooFilter represents a probabalistic counter
 */
 type CuckooFilter struct {
 	buckets []bucket
@@ -13,7 +13,7 @@ type CuckooFilter struct {
 }
 
 /*
-NewCuckooFilter ...
+NewCuckooFilter returns a new cuckoofilter with a given capacity
 */
 func NewCuckooFilter(capacity uint) *CuckooFilter {
 	capacity = getNextPow2(capacity)
@@ -25,14 +25,14 @@ func NewCuckooFilter(capacity uint) *CuckooFilter {
 }
 
 /*
-NewDefaultCuckooFilter ...
+NewDefaultCuckooFilter returns a new cuckoofilter with the default capacity of 1000000
 */
 func NewDefaultCuckooFilter() *CuckooFilter {
 	return NewCuckooFilter(1000000)
 }
 
 /*
-Lookup ...
+Lookup returns true if data is in the counter
 */
 func (cf *CuckooFilter) Lookup(data []byte) bool {
 	i1, i2, fp := getIndicesAndFingerprint(data)
@@ -42,7 +42,7 @@ func (cf *CuckooFilter) Lookup(data []byte) bool {
 }
 
 /*
-Insert ...
+Inserts inserts data into the counter and returns true upon success
 */
 func (cf *CuckooFilter) Insert(data []byte) bool {
 	i1, i2, fp := getIndicesAndFingerprint(data)
@@ -53,7 +53,7 @@ func (cf *CuckooFilter) Insert(data []byte) bool {
 }
 
 /*
-InsertUnique ...
+InsertUnique inserts data into the counter if not exists and returns true upon success
 */
 func (cf *CuckooFilter) InsertUnique(data []byte) bool {
 	if cf.Lookup(data) {
@@ -66,9 +66,6 @@ func (cf *CuckooFilter) InsertUnique(data []byte) bool {
 	return cf.reinsert(fp, i2)
 }
 
-/*
-insert ...
-*/
 func (cf *CuckooFilter) insert(fp fingerprint, i uint) bool {
 	b := cf.buckets[i%uint(len(cf.buckets))]
 	if b.insert(fp) {
@@ -78,9 +75,6 @@ func (cf *CuckooFilter) insert(fp fingerprint, i uint) bool {
 	return false
 }
 
-/*
-reinsert ...
-*/
 func (cf *CuckooFilter) reinsert(fp fingerprint, i uint) bool {
 	for k := 0; k < maxCuckooCount; k++ {
 		j := rand.Intn(bucketSize)
@@ -98,16 +92,13 @@ func (cf *CuckooFilter) reinsert(fp fingerprint, i uint) bool {
 }
 
 /*
-Delete ...
+Delete data from counter if exists and return if deleted or not
 */
 func (cf *CuckooFilter) Delete(data []byte) bool {
 	i1, i2, fp := getIndicesAndFingerprint(data)
 	return cf.delete(fp, i1) || cf.delete(fp, i2)
 }
 
-/*
-delete ...
-*/
 func (cf *CuckooFilter) delete(fp fingerprint, i uint) bool {
 	b := cf.buckets[i%uint(len(cf.buckets))]
 	if b.delete(fp) {
@@ -115,4 +106,12 @@ func (cf *CuckooFilter) delete(fp fingerprint, i uint) bool {
 		return true
 	}
 	return false
+}
+
+/*
+GetCount returns the number of items in the counter
+*/
+
+func (cf *CuckooFilter) GetCount() uint {
+	return cf.count
 }

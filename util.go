@@ -27,14 +27,14 @@ func getIndicesAndFingerprint(data []byte) (uint, uint, []byte) {
 	return i1, i2, f
 }
 
-func getNextPow2(x uint) uint {
-	x--
-	x |= x >> 1
-	x |= x >> 2
-	x |= x >> 4
-	x |= x >> 8
-	x |= x >> 16
-	x |= x >> 32
-	x++
-	return x
+func getNextPow2(n uint) uint {
+	n--
+	n |= n >> 1
+	n |= n >> 2
+	n |= n >> 4
+	n |= n >> 8
+	n |= n >> 16
+	n |= n >> 32
+	n++
+	return n
 }
