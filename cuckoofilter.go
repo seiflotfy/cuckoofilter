@@ -83,7 +83,6 @@ func (cf *CuckooFilter) reinsert(fp fingerprint, i uint) bool {
 
 		// look in the alternate location for that random element
 		i = getAltIndex(fp, i)
-
 		if cf.insert(fp, i) {
 			return true
 		}
