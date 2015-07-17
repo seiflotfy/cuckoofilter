@@ -2,20 +2,22 @@ package cuckoofilter
 
 import (
 	"encoding/binary"
-
-	"code.google.com/p/gofarmhash"
+	"hash/fnv"
 )
 
 // getHash returns a 32-bit hash value for the given data.
 func getHash(data []byte) []byte {
-	hash32 := farmhash.FingerPrint32(data)
-	hash := make([]byte, 4)
-	binary.BigEndian.PutUint32(hash, hash32)
-	return hash
+	hasher := fnv.New64()
+	hasher.Write(data)
+	hash64 := hasher.Sum64()
+	hash := make([]byte, 8)
+	binary.BigEndian.PutUint64(hash, hash64)
+	return hash[4:]
 }
 
 func getAltIndex(fp []byte, i uint) uint {
-	return i ^ uint(binary.BigEndian.Uint32(getHash(fp)))
+	hash := getHash(fp)
+	return i ^ uint(binary.BigEndian.Uint32(hash))
 }
 
 // getIndicesAndFingerprint returns the 2 bucket indices and fingerprint to be used

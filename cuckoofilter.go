@@ -16,8 +16,11 @@ type CuckooFilter struct {
 NewCuckooFilter returns a new cuckoofilter with a given capacity
 */
 func NewCuckooFilter(capacity uint) *CuckooFilter {
-	capacity = getNextPow2(capacity)
-	buckets := make([]bucket, capacity/bucketSize)
+	capacity = getNextPow2(capacity) / bucketSize
+	if capacity == 0 {
+		capacity = 1
+	}
+	buckets := make([]bucket, capacity)
 	for i := range buckets {
 		buckets[i] = make([]fingerprint, bucketSize)
 	}
@@ -59,11 +62,7 @@ func (cf *CuckooFilter) InsertUnique(data []byte) bool {
 	if cf.Lookup(data) {
 		return false
 	}
-	i1, i2, fp := getIndicesAndFingerprint(data)
-	if cf.insert(fp, i1) || cf.insert(fp, i2) {
-		return true
-	}
-	return cf.reinsert(fp, i2)
+	return cf.Insert(data)
 }
 
 func (cf *CuckooFilter) insert(fp fingerprint, i uint) bool {
@@ -78,8 +77,9 @@ func (cf *CuckooFilter) insert(fp fingerprint, i uint) bool {
 func (cf *CuckooFilter) reinsert(fp fingerprint, i uint) bool {
 	for k := 0; k < maxCuckooCount; k++ {
 		j := rand.Intn(bucketSize)
-		fp, newfp := cf.buckets[i%uint(len(cf.buckets))][j], fp
-		cf.buckets[i%uint(len(cf.buckets))][j] = newfp
+		oldfp := fp
+		fp = cf.buckets[i%uint(len(cf.buckets))][j]
+		cf.buckets[i%uint(len(cf.buckets))][j] = oldfp
 
 		// look in the alternate location for that random element
 		i = getAltIndex(fp, i)
