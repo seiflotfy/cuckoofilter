@@ -15,17 +15,17 @@ func getHash(data []byte) []byte {
 	return hash[4:]
 }
 
-func getAltIndex(fp []byte, i uint) uint {
+func getAltIndex(fp []byte, i uint, size uint) uint {
 	hash := getHash(fp)
-	return i ^ uint(binary.BigEndian.Uint32(hash))
+	return (i ^ uint(binary.BigEndian.Uint32(hash))) % size
 }
 
 // getIndicesAndFingerprint returns the 2 bucket indices and fingerprint to be used
-func getIndicesAndFingerprint(data []byte) (uint, uint, []byte) {
+func getIndicesAndFingerprint(data []byte, size uint) (uint, uint, []byte) {
 	hash := getHash(data)
 	f := hash[0:fingerprintSize]
-	i1 := uint(binary.BigEndian.Uint32(hash))
-	i2 := getAltIndex(f, i1)
+	i1 := uint(binary.BigEndian.Uint32(hash)) % size
+	i2 := getAltIndex(f, i1, size)
 	return i1, i2, f
 }
 
