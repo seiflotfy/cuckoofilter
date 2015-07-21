@@ -1,31 +1,29 @@
 package cuckoofilter
 
 import (
-	"encoding/binary"
+	"hash"
+	"hash/fnv"
 
 	"code.google.com/p/gofarmhash"
 )
 
-// getHash returns a 64-bit hash value for the given data.
-func getHash(data []byte) uint64 {
-	return farmhash.Hash64(data)
-}
+var hashera hash.Hash64 = fnv.New64a()
 
 func getAltIndex(fp []byte, i uint, numBuckets uint) uint {
-	hash := getHash(fp)
-	return (i ^ uint(hash)) % numBuckets
+	return uint(uint64(i)^farmhash.Hash64(fp)) % numBuckets
 }
 
-func getFingerprint(hash64 uint64) []byte {
-	hash := make([]byte, 8)
-	binary.BigEndian.PutUint64(hash, hash64)
+func getFingerprint(data []byte) []byte {
+	hashera.Reset()
+	hashera.Write(data)
+	hash := hashera.Sum(nil)
 	return hash[:fingerprintSize]
 }
 
 // getIndicesAndFingerprint returns the 2 bucket indices and fingerprint to be used
 func getIndicesAndFingerprint(data []byte, numBuckets uint) (uint, uint, []byte) {
-	hash := getHash(data)
-	f := getFingerprint(hash)
+	hash := farmhash.Hash64(data)
+	f := getFingerprint(data)
 	i1 := uint(hash) % numBuckets
 	i2 := getAltIndex(f, i1, numBuckets)
 	return i1, i2, f
