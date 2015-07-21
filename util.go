@@ -2,30 +2,32 @@ package cuckoofilter
 
 import (
 	"encoding/binary"
-	"hash/fnv"
+
+	"code.google.com/p/gofarmhash"
 )
 
-// getHash returns a 32-bit hash value for the given data.
-func getHash(data []byte) []byte {
-	hasher := fnv.New64()
-	hasher.Write(data)
-	hash64 := hasher.Sum64()
-	hash := make([]byte, 8)
-	binary.BigEndian.PutUint64(hash, hash64)
-	return hash[4:]
+// getHash returns a 64-bit hash value for the given data.
+func getHash(data []byte) uint64 {
+	return farmhash.Hash64(data)
 }
 
-func getAltIndex(fp []byte, i uint, size uint) uint {
+func getAltIndex(fp []byte, i uint, numBuckets uint) uint {
 	hash := getHash(fp)
-	return (i ^ uint(binary.BigEndian.Uint32(hash))) % size
+	return (i ^ uint(hash)) % numBuckets
+}
+
+func getFingerprint(hash64 uint64) []byte {
+	hash := make([]byte, 8)
+	binary.BigEndian.PutUint64(hash, hash64)
+	return hash[:fingerprintSize]
 }
 
 // getIndicesAndFingerprint returns the 2 bucket indices and fingerprint to be used
-func getIndicesAndFingerprint(data []byte, size uint) (uint, uint, []byte) {
+func getIndicesAndFingerprint(data []byte, numBuckets uint) (uint, uint, []byte) {
 	hash := getHash(data)
-	f := hash[0:fingerprintSize]
-	i1 := uint(binary.BigEndian.Uint32(hash)) % size
-	i2 := getAltIndex(f, i1, size)
+	f := getFingerprint(hash)
+	i1 := uint(hash) % numBuckets
+	i2 := getAltIndex(f, i1, numBuckets)
 	return i1, i2, f
 }
 
