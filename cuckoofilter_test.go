@@ -9,7 +9,7 @@ import (
 
 func TestInsertion(t *testing.T) {
 
-	cf := NewCuckooFilter(1000000)
+	cf := NewCuckooFilter(4)
 
 	fd, err := os.Open("/usr/share/dict/web2")
 	if err != nil {
@@ -19,16 +19,23 @@ func TestInsertion(t *testing.T) {
 	scanner := bufio.NewScanner(fd)
 
 	values := make([][]byte, 0)
+	i := 0
 	for scanner.Scan() {
 		s := []byte(scanner.Text())
 		cf.InsertUnique(s)
 		values = append(values, s)
+		i += 1
+		if i == 5 {
+			break
+		}
 	}
 
 	count := cf.GetCount()
-	if count != 235041 {
+	if count != 3 {
 		t.Errorf("Expected count = 235041, instead count = %d", count)
 	}
+
+	fmt.Println(cf.buckets)
 
 	for _, v := range values {
 		cf.Delete(v)

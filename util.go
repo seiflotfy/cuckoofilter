@@ -9,8 +9,8 @@ import (
 
 var hashera hash.Hash64 = fnv.New64a()
 
-func getAltIndex(fp []byte, i uint, numBuckets uint) uint {
-	return uint(uint64(i)^farmhash.Hash64(fp)) % numBuckets
+func getAltIndex(fp []byte, i uint64, numBuckets uint64) uint64 {
+	return (uint64(i) ^ farmhash.Hash64(fp)) % numBuckets
 }
 
 func getFingerprint(data []byte) []byte {
@@ -21,15 +21,15 @@ func getFingerprint(data []byte) []byte {
 }
 
 // getIndicesAndFingerprint returns the 2 bucket indices and fingerprint to be used
-func getIndicesAndFingerprint(data []byte, numBuckets uint) (uint, uint, []byte) {
+func getIndicesAndFingerprint(data []byte, numBuckets uint64) (uint64, uint64, []byte) {
 	hash := farmhash.Hash64(data)
 	f := getFingerprint(data)
-	i1 := uint(hash) % numBuckets
+	i1 := hash % numBuckets
 	i2 := getAltIndex(f, i1, numBuckets)
 	return i1, i2, f
 }
 
-func getNextPow2(n uint) uint {
+func getNextPow2(n uint64) uint64 {
 	n--
 	n |= n >> 1
 	n |= n >> 2

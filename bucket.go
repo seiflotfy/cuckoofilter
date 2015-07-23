@@ -8,14 +8,14 @@ const bucketSize = 4
 type fingerprint []byte
 type bucket []fingerprint
 
-func (b bucket) insert(fp fingerprint) bool {
+func (b bucket) insert(fp fingerprint) int {
 	for i, tfp := range b {
 		if tfp == nil {
 			b[i] = fp
-			return true
+			return i
 		}
 	}
-	return false
+	return -1
 }
 
 func (b bucket) delete(fp fingerprint) bool {
