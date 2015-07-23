@@ -13,6 +13,7 @@ CuckooFilter represents a probabalistic counter
 type CuckooFilter struct {
 	buckets    []bucket
 	count      uint64
+	capacity   uint64
 	indicators [][]uint
 }
 
@@ -30,7 +31,7 @@ func NewCuckooFilter(capacity uint64) *CuckooFilter {
 		buckets[i] = make([]fingerprint, bucketSize)
 		indicators[i] = make([]uint, bucketSize)
 	}
-	return &CuckooFilter{buckets, 0, indicators}
+	return &CuckooFilter{buckets, 0, capacity, indicators}
 }
 
 /*
@@ -165,7 +166,7 @@ func (cf *CuckooFilter) GetCount() uint64 {
 
 func (cf *CuckooFilter) expand() {
 	N := uint64(len(cf.buckets))
-	M := N * 2
+	M := N + cf.capacity
 
 	origBucket := cf.buckets
 	origInidcators := cf.indicators
