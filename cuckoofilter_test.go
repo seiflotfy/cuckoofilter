@@ -19,7 +19,7 @@ func TestInsertion(t *testing.T) {
 	scanner := bufio.NewScanner(fd)
 
 	fmt.Println("----")
-	fmt.Println("Fingerprint = 1 byte and Bucketsize = 4 \nStart with 2 buckets\n")
+	fmt.Println("Fingerprint = 1 byte and Bucketsize = 2 \nStart with 2 buckets\n")
 
 	fmt.Println("Starting Insertion\n")
 
