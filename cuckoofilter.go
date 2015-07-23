@@ -167,49 +167,36 @@ func (cf *CuckooFilter) expand() {
 	N := uint64(len(cf.buckets))
 	M := N * 2
 
-	buckets := make([]bucket, N)
-	indicators := make([][]uint, N)
-	for i := range buckets {
-		buckets[i] = make([]fingerprint, bucketSize)
-		indicators[i] = make([]uint, bucketSize)
-	}
+	origBucket := cf.buckets
+	origInidcators := cf.indicators
 
-	for i, bucket := range cf.buckets {
-		for j, fp := range bucket {
-			buckets[i][j] = fp
-			indicators[i][j] = cf.indicators[i][j]
-		}
+	cf.buckets = make([]bucket, M)
+	cf.indicators = make([][]uint, M)
+	for i := range cf.buckets {
+		cf.buckets[i] = make([]fingerprint, bucketSize)
+		cf.indicators[i] = make([]uint, bucketSize)
 	}
 
 	//TODO: Finish expansion implementation
 	fmt.Println("EXPANDING")
 	fmt.Print("Original Buckets: ")
-	printBucket(cf.buckets)
+	printBucket(origBucket)
 	fmt.Print("Original Indicat: ")
-	printIndicators(indicators)
+	printIndicators(origInidcators)
 
-	cf.buckets = append(cf.buckets, buckets...)
-	cf.indicators = append(cf.indicators, indicators...)
-
-	fmt.Print("Duplicat Buckets: ")
-	printBucket(cf.buckets)
-	fmt.Print("Duplicat Indicat: ")
-	printIndicators(indicators)
 	for i := uint64(0); i < N; i++ {
-		bucket := cf.buckets[i]
+		bucket := origBucket[i]
 		for j, fp := range bucket {
 			if fp == nil {
 				continue
 			}
-			if cf.indicators[i][j] == 0 {
+			if origInidcators[i][j] == 0 {
 				/*
 					If fp is in the i1 bucket (i.e., the indicator bit is 0),
 					then we still put this fingerprint in the i1 bucket in the new table.
 				*/
-
-				//Remove fp from second half
-				cf.buckets[i+N][j] = nil
-				cf.indicators[i+N][j] = 0
+				cf.buckets[i][j] = fp
+				cf.indicators[i][j] = 0
 			} else {
 				/*
 					However, if the it is in the i2 bucket in original table (i.e., indicator bit == 1),
@@ -217,8 +204,9 @@ func (cf *CuckooFilter) expand() {
 					then calculate the new i2 bucket index in the new table by (i1 ^ hash(fingerprint)) % M,
 					and move this fingerprint to the i2 bucket in the new table.
 				*/
+				i2 := i
 				i1 := getAltIndex(fp, i, N)
-				i2 := getAltIndex(fp, i1, M)
+				i2 = getAltIndex(fp, i1, M)
 				cf.buckets[i2][j] = fp
 				cf.indicators[i2][j] = 1
 			}
@@ -228,6 +216,6 @@ func (cf *CuckooFilter) expand() {
 	fmt.Print("Dedupled Buckets: ")
 	printBucket(cf.buckets)
 	fmt.Print("Dedupled Indicat: ")
-	printIndicators(indicators)
+	printIndicators(cf.indicators)
 	fmt.Println("\n")
 }
