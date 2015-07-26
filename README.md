@@ -10,3 +10,30 @@ For details about the algorithm and citations please use this article for now
 
 ##Note
 This implementation uses a a static bucket size of 4 fingerprints and a fingerprint size of 1 byte based on my understanding of an optimal bucket/fingerprint/size ratio from the aforementioned paper.
+
+##Example usage:
+```go
+
+import "github.com/seiflotfy/cuckoofilter"
+
+cf := cuckoofilter.NewDefaultCuckooFilter()
+cf.InsertUnique("geeky ogre")
+
+// Lookup a string (and it a miss) if it exists in the cuckoofilter
+cf.Lookup("hello")
+
+count := cf.GetCount()
+// count == 1
+
+// Delete a string (and it a miss)
+cf.Delete("hello")
+
+count := cf.GetCount()
+// count == 1
+
+// Delete a string (a hit)
+cf.Delete("geeky ogre")
+
+count := cf.GetCount()
+// count == 0
+```
