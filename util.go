@@ -7,9 +7,13 @@ import (
 	"code.google.com/p/gofarmhash"
 )
 
-var hashera hash.Hash64 = fnv.New64a()
+var hashera hash.Hash64 = fnv.New64()
 
 func getAltIndex(fp []byte, i uint, numBuckets uint) uint {
+	hash := farmhash.Hash64(fp)
+	if hash == 0 {
+		hash += 1
+	}
 	return uint(uint64(i)^farmhash.Hash64(fp)) % numBuckets
 }
 
