@@ -37,3 +37,6 @@ cf.Delete("geeky ogre")
 count := cf.GetCount()
 // count == 0
 ```
+
+##Documentation:
+["Cuckoo Filter on GoDoc"](http://godoc.org/github.com/seiflotfy/cuckoofilter)
