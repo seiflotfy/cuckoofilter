@@ -17,22 +17,22 @@ This implementation uses a a static bucket size of 4 fingerprints and a fingerpr
 import "github.com/seiflotfy/cuckoofilter"
 
 cf := cuckoofilter.NewDefaultCuckooFilter()
-cf.InsertUnique("geeky ogre")
+cf.InsertUnique([]byte{"geeky ogre"})
 
 // Lookup a string (and it a miss) if it exists in the cuckoofilter
-cf.Lookup("hello")
+cf.Lookup([]byte{"hello"})
 
 count := cf.GetCount()
 // count == 1
 
 // Delete a string (and it a miss)
-cf.Delete("hello")
+cf.Delete([]byte{"hello"})
 
 count := cf.GetCount()
 // count == 1
 
 // Delete a string (a hit)
-cf.Delete("geeky ogre")
+cf.Delete([]byte{"geeky ogre"})
 
 count := cf.GetCount()
 // count == 0
