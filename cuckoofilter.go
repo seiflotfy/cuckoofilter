@@ -20,9 +20,9 @@ func NewCuckooFilter(capacity uint) *CuckooFilter {
 	if capacity == 0 {
 		capacity = 1
 	}
-	buckets := make([]bucket, capacity)
+	buckets := make([]bucket, capacity, capacity)
 	for i := range buckets {
-		buckets[i] = make([]fingerprint, bucketSize)
+		buckets[i] = [bucketSize]fingerprint{}
 	}
 	return &CuckooFilter{buckets, 0}
 }
