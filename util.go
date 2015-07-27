@@ -9,23 +9,35 @@ import (
 
 var hashera hash.Hash64 = fnv.New64()
 
-func getAltIndex(fp []byte, i uint, numBuckets uint) uint {
-	hash := farmhash.Hash64(fp)
+func getAltIndex(fp fingerprint, i uint, numBuckets uint) uint {
+	bytes := make([]byte, fingerprintSize, fingerprintSize)
+	for i, b := range fp {
+		bytes[i] = b
+	}
+	hash := farmhash.Hash64(bytes)
 	if hash == 0 {
 		hash += 1
 	}
-	return uint(uint64(i)^farmhash.Hash64(fp)) % numBuckets
+	return uint(uint64(i)^hash) % numBuckets
 }
 
-func getFingerprint(data []byte) []byte {
+func getFingerprint(data []byte) fingerprint {
 	hashera.Reset()
 	hashera.Write(data)
 	hash := hashera.Sum(nil)
-	return hash[:fingerprintSize]
+
+	fp := fingerprint{}
+	for i := 0; i < fingerprintSize; i++ {
+		fp[i] = hash[i]
+	}
+	if fp == nullFp {
+		fp[0] += 7
+	}
+	return fp
 }
 
 // getIndicesAndFingerprint returns the 2 bucket indices and fingerprint to be used
-func getIndicesAndFingerprint(data []byte, numBuckets uint) (uint, uint, []byte) {
+func getIndicesAndFingerprint(data []byte, numBuckets uint) (uint, uint, fingerprint) {
 	hash := farmhash.Hash64(data)
 	f := getFingerprint(data)
 	i1 := uint(hash) % numBuckets
