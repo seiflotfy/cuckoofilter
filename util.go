@@ -1,6 +1,7 @@
 package cuckoofilter
 
 import (
+	"encoding/binary"
 	"hash"
 	"hash/fnv"
 
@@ -10,15 +11,13 @@ import (
 var hashera hash.Hash64 = fnv.New64()
 
 func getAltIndex(fp fingerprint, i uint, numBuckets uint) uint {
-	bytes := make([]byte, fingerprintSize, fingerprintSize)
+	bytes := make([]byte, 64, 64)
 	for i, b := range fp {
 		bytes[i] = b
 	}
-	hash := farmhash.Hash64(bytes)
-	if hash == 0 {
-		hash += 1
-	}
-	return uint(uint64(i)^hash) % numBuckets
+
+	hash := binary.LittleEndian.Uint64(bytes)
+	return uint(uint64(i)^(hash*0x5bd1e995)) % numBuckets
 }
 
 func getFingerprint(data []byte) fingerprint {

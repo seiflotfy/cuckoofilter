@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"testing"
-	"time"
 
 	"code.google.com/p/gofarmhash"
 )
@@ -37,10 +36,7 @@ func TestFarmhash(t *testing.T) {
 		values = append(values, s)
 	}
 
-	var tt time.Duration = 0
 	for _, v := range values {
-		tr := time.Now()
 		farmhash.Hash64([]byte(v))
-		tt += time.Since(tr)
 	}
 }
