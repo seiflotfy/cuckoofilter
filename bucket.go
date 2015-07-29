@@ -6,7 +6,7 @@ const bucketSize = 4
 type fingerprint [fingerprintSize]byte
 type bucket [bucketSize]fingerprint
 
-var nullFp fingerprint = fingerprint{0}
+var nullFp = fingerprint{0}
 
 func (b *bucket) insert(fp fingerprint) bool {
 	for i, tfp := range b {

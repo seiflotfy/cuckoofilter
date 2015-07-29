@@ -18,7 +18,7 @@ func TestInsertion(t *testing.T) {
 	}
 	scanner := bufio.NewScanner(fd)
 
-	values := make([][]byte, 0)
+	var values [][]byte
 	for scanner.Scan() {
 		s := []byte(scanner.Text())
 		cf.InsertUnique(s)

@@ -16,7 +16,7 @@ type CuckooFilter struct {
 NewCuckooFilter returns a new cuckoofilter with a given capacity
 */
 func NewCuckooFilter(capacity uint) *CuckooFilter {
-	capacity = getNextPow2(capacity) / bucketSize
+	capacity = getNextPow2(uint64(capacity)) / bucketSize
 	if capacity == 0 {
 		capacity = 1
 	}
@@ -44,7 +44,7 @@ func (cf *CuckooFilter) Lookup(data []byte) bool {
 }
 
 /*
-Inserts inserts data into the counter and returns true upon success
+Insert inserts data into the counter and returns true upon success
 */
 func (cf *CuckooFilter) Insert(data []byte) bool {
 	i1, i2, fp := getIndicesAndFingerprint(data, uint(len(cf.buckets)))

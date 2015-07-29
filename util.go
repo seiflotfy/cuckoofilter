@@ -2,13 +2,12 @@ package cuckoofilter
 
 import (
 	"encoding/binary"
-	"hash"
 	"hash/fnv"
 
 	"code.google.com/p/gofarmhash"
 )
 
-var hashera hash.Hash64 = fnv.New64()
+var hashera = fnv.New64()
 
 func getAltIndex(fp fingerprint, i uint, numBuckets uint) uint {
 	bytes := make([]byte, 64, 64)
@@ -44,7 +43,7 @@ func getIndicesAndFingerprint(data []byte, numBuckets uint) (uint, uint, fingerp
 	return i1, i2, f
 }
 
-func getNextPow2(n uint) uint {
+func getNextPow2(n uint64) uint {
 	n--
 	n |= n >> 1
 	n |= n >> 2
@@ -53,5 +52,5 @@ func getNextPow2(n uint) uint {
 	n |= n >> 16
 	n |= n >> 32
 	n++
-	return n
+	return uint(n)
 }

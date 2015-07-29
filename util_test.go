@@ -30,7 +30,7 @@ func TestFarmhash(t *testing.T) {
 	}
 	scanner := bufio.NewScanner(fd)
 
-	values := make([]string, 0)
+	var values []string
 	for scanner.Scan() {
 		s := scanner.Text()
 		values = append(values, s)
