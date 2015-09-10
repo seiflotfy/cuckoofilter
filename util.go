@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"hash/fnv"
 
-	"code.google.com/p/gofarmhash"
+	"github.com/leemcloughlin/gofarmhash"
 )
 
 var hashera = fnv.New64()
