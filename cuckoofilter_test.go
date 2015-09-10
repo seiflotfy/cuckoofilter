@@ -25,7 +25,7 @@ func TestInsertion(t *testing.T) {
 		values = append(values, s)
 	}
 
-	count := cf.GetCount()
+	count := cf.Count()
 	if count != 235081 {
 		t.Errorf("Expected count = 235081, instead count = %d", count)
 	}
@@ -34,7 +34,7 @@ func TestInsertion(t *testing.T) {
 		cf.Delete(v)
 	}
 
-	count = cf.GetCount()
+	count = cf.Count()
 	if count != 0 {
 		t.Errorf("Expected count = 0, instead count == %d", count)
 	}

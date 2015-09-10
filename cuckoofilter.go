@@ -107,6 +107,6 @@ func (cf *CuckooFilter) delete(fp fingerprint, i uint) bool {
 /*
 GetCount returns the number of items in the counter
 */
-func (cf *CuckooFilter) GetCount() uint {
+func (cf *CuckooFilter) Count() uint {
 	return cf.count
 }
