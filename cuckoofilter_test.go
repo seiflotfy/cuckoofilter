@@ -11,7 +11,7 @@ func TestInsertion(t *testing.T) {
 
 	cf := NewCuckooFilter(1000000)
 
-	fd, err := os.Open("/usr/share/dict/web2")
+	fd, err := os.Open("/usr/share/dict/words")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -19,15 +19,18 @@ func TestInsertion(t *testing.T) {
 	scanner := bufio.NewScanner(fd)
 
 	var values [][]byte
+	var lineCount uint
 	for scanner.Scan() {
 		s := []byte(scanner.Text())
-		cf.InsertUnique(s)
+		if cf.InsertUnique(s) {
+			lineCount++
+		}
 		values = append(values, s)
 	}
 
 	count := cf.Count()
-	if count != 235081 {
-		t.Errorf("Expected count = 235081, instead count = %d", count)
+	if count != lineCount {
+		t.Errorf("Expected count = %d, instead count = %d", lineCount, count)
 	}
 
 	for _, v := range values {

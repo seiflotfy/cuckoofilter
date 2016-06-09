@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"code.google.com/p/gofarmhash"
+	"github.com/leemcloughlin/gofarmhash"
 )
 
 func TestIndexAndFP(t *testing.T) {
@@ -23,7 +23,7 @@ func TestIndexAndFP(t *testing.T) {
 }
 
 func TestFarmhash(t *testing.T) {
-	fd, err := os.Open("/usr/share/dict/web2")
+	fd, err := os.Open("/usr/share/dict/words")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
