@@ -3,11 +3,13 @@ package cuckoofilter
 import (
 	"encoding/binary"
 	"hash/fnv"
+	"sync"
 
 	"github.com/leemcloughlin/gofarmhash"
 )
 
 var hashera = fnv.New64()
+var hlock sync.Mutex
 
 func getAltIndex(fp fingerprint, i uint, numBuckets uint) uint {
 	bytes := make([]byte, 64, 64)
@@ -20,6 +22,9 @@ func getAltIndex(fp fingerprint, i uint, numBuckets uint) uint {
 }
 
 func getFingerprint(data []byte) fingerprint {
+	hlock.Lock()
+	defer hlock.Unlock()
+	
 	hashera.Reset()
 	hashera.Write(data)
 	hash := hashera.Sum(nil)
