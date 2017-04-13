@@ -3,6 +3,7 @@ package cuckoofilter
 import (
 	"encoding/binary"
 	"hash/fnv"
+	"sync"
 
 	"github.com/leemcloughlin/gofarmhash"
 )
