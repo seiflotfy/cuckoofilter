@@ -42,3 +42,22 @@ func TestInsertion(t *testing.T) {
 		t.Errorf("Expected count = 0, instead count == %d", count)
 	}
 }
+
+func TestSaveLoad(t *testing.T) {
+	defer os.Remove("./test.gob")
+	cf := NewCuckooFilter(1000000)
+	cf.InsertUnique([]byte("test1"))
+	cf.Save("./test.gob")
+	cf.InsertUnique([]byte("test2"))
+	cf.Load("./test.gob")
+	if !cf.Lookup([]byte("test1")) {
+		t.Errorf("Expected 'test1' in filter")
+	}
+	if cf.Lookup([]byte("test2")) {
+		t.Errorf("Not expected 'test2' in filter")
+	}
+	count := cf.Count()
+	if count != 1 {
+		t.Errorf("Expected count = 1, instead count == %d", count)
+	}
+}
