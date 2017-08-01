@@ -23,7 +23,7 @@ func getFingerprint(data []byte) byte {
 	if fp == 0 {
 		fp += 7
 	}
-	return byte(fp)
+	return fp
 }
 
 // getIndicesAndFingerprint returns the 2 bucket indices and fingerprint to be used
