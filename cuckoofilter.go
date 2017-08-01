@@ -1,6 +1,9 @@
 package cuckoofilter
 
-import "math/rand"
+import (
+	"fmt"
+	"math/rand"
+)
 
 const maxCuckooCount = 500
 
@@ -22,7 +25,7 @@ func NewCuckooFilter(capacity uint) *CuckooFilter {
 	}
 	buckets := make([]bucket, capacity, capacity)
 	for i := range buckets {
-		buckets[i] = [bucketSize]fingerprint{}
+		buckets[i] = [bucketSize]byte{}
 	}
 	return &CuckooFilter{buckets, 0}
 }
@@ -64,7 +67,7 @@ func (cf *CuckooFilter) InsertUnique(data []byte) bool {
 	return cf.Insert(data)
 }
 
-func (cf *CuckooFilter) insert(fp fingerprint, i uint) bool {
+func (cf *CuckooFilter) insert(fp byte, i uint) bool {
 	if cf.buckets[i].insert(fp) {
 		cf.count++
 		return true
@@ -72,7 +75,7 @@ func (cf *CuckooFilter) insert(fp fingerprint, i uint) bool {
 	return false
 }
 
-func (cf *CuckooFilter) reinsert(fp fingerprint, i uint) bool {
+func (cf *CuckooFilter) reinsert(fp byte, i uint) bool {
 	for k := 0; k < maxCuckooCount; k++ {
 		j := rand.Intn(bucketSize)
 		oldfp := fp
@@ -96,7 +99,7 @@ func (cf *CuckooFilter) Delete(data []byte) bool {
 	return cf.delete(fp, i1) || cf.delete(fp, i2)
 }
 
-func (cf *CuckooFilter) delete(fp fingerprint, i uint) bool {
+func (cf *CuckooFilter) delete(fp byte, i uint) bool {
 	if cf.buckets[i].delete(fp) {
 		cf.count--
 		return true
@@ -109,4 +112,38 @@ GetCount returns the number of items in the counter
 */
 func (cf *CuckooFilter) Count() uint {
 	return cf.count
+}
+
+// Encode ...
+func (cf *CuckooFilter) Encode() []byte {
+	bytes := make([]byte, len(cf.buckets)*bucketSize)
+	for i, b := range cf.buckets {
+		for j, f := range b {
+			index := (i * len(b)) + j
+			bytes[index] = f
+		}
+	}
+	return bytes
+}
+
+// Decode ...
+func Decode(bytes []byte) (*CuckooFilter, error) {
+	var count uint
+	if len(bytes)%4 != 0 {
+		return nil, fmt.Errorf("expected bytes to be multiuple of 4, got %d", len(bytes))
+	}
+	buckets := make([]bucket, len(bytes)/4)
+	for i, b := range buckets {
+		for j := range b {
+			index := (i * len(b)) + j
+			if bytes[index] != 0 {
+				buckets[i][j] = bytes[index]
+				count++
+			}
+		}
+	}
+	return &CuckooFilter{
+		buckets: buckets,
+		count:   count,
+	}, nil
 }

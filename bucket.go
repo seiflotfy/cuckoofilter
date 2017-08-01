@@ -1,14 +1,13 @@
 package cuckoofilter
 
-const fingerprintSize = 1
-const bucketSize = 4
+type bucket [4]byte
 
-type fingerprint [fingerprintSize]byte
-type bucket [bucketSize]fingerprint
+const (
+	nullFp     = byte(0)
+	bucketSize = 4
+)
 
-var nullFp = fingerprint{0}
-
-func (b *bucket) insert(fp fingerprint) bool {
+func (b *bucket) insert(fp byte) bool {
 	for i, tfp := range b {
 		if tfp == nullFp {
 			b[i] = fp
@@ -18,7 +17,7 @@ func (b *bucket) insert(fp fingerprint) bool {
 	return false
 }
 
-func (b *bucket) delete(fp fingerprint) bool {
+func (b *bucket) delete(fp byte) bool {
 	for i, tfp := range b {
 		if tfp == fp {
 			b[i] = nullFp
@@ -28,7 +27,7 @@ func (b *bucket) delete(fp fingerprint) bool {
 	return false
 }
 
-func (b *bucket) getFingerprintIndex(fp fingerprint) int {
+func (b *bucket) getFingerprintIndex(fp byte) int {
 	for i, tfp := range b {
 		if tfp == fp {
 			return i

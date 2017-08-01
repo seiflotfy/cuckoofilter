@@ -2,46 +2,33 @@ package cuckoofilter
 
 import (
 	"encoding/binary"
-	"hash/fnv"
 	"sync"
 
-	"github.com/leemcloughlin/gofarmhash"
+	"github.com/dgryski/go-metro"
 )
 
-var hashera = fnv.New64()
 var hlock sync.Mutex
 
-func getAltIndex(fp fingerprint, i uint, numBuckets uint) uint {
-	bytes := make([]byte, 64, 64)
-	for i, b := range fp {
-		bytes[i] = b
-	}
-
+func getAltIndex(fp byte, i uint, numBuckets uint) uint {
+	bytes := []byte{0, 0, 0, 0, 0, 0, 0, fp}
 	hash := binary.LittleEndian.Uint64(bytes)
 	return uint(uint64(i)^(hash*0x5bd1e995)) % numBuckets
 }
 
-func getFingerprint(data []byte) fingerprint {
+func getFingerprint(data []byte) byte {
 	hlock.Lock()
 	defer hlock.Unlock()
-	
-	hashera.Reset()
-	hashera.Write(data)
-	hash := hashera.Sum(nil)
 
-	fp := fingerprint{}
-	for i := 0; i < fingerprintSize; i++ {
-		fp[i] = hash[i]
+	fp := byte(metro.Hash64(data, 1337))
+	if fp == 0 {
+		fp += 7
 	}
-	if fp == nullFp {
-		fp[0] += 7
-	}
-	return fp
+	return byte(fp)
 }
 
 // getIndicesAndFingerprint returns the 2 bucket indices and fingerprint to be used
-func getIndicesAndFingerprint(data []byte, numBuckets uint) (uint, uint, fingerprint) {
-	hash := farmhash.Hash64(data)
+func getIndicesAndFingerprint(data []byte, numBuckets uint) (uint, uint, byte) {
+	hash := metro.Hash64(data, 1337)
 	f := getFingerprint(data)
 	i1 := uint(hash) % numBuckets
 	i2 := getAltIndex(f, i1, numBuckets)
