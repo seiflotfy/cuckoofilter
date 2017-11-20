@@ -10,10 +10,10 @@ For details about the algorithm and citations please use this article for now
 
 ["Cuckoo Filter: Better Than Bloom" by Bin Fan, Dave Andersen and Michael Kaminsky](https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf)
 
-##Note
+## Note
 This implementation uses a a static bucket size of 4 fingerprints and a fingerprint size of 1 byte based on my understanding of an optimal bucket/fingerprint/size ratio from the aforementioned paper.
 
-##Example usage:
+## Example usage:
 ```go
 
 import "github.com/seiflotfy/cuckoofilter"
@@ -40,5 +40,5 @@ count := cf.Count()
 // count == 0
 ```
 
-##Documentation:
+## Documentation:
 ["Cuckoo Filter on GoDoc"](http://godoc.org/github.com/seiflotfy/cuckoofilter)
