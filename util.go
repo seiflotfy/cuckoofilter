@@ -1,28 +1,16 @@
 package cuckoofilter
 
 import (
-	"encoding/binary"
-	"sync"
-
 	"github.com/dgryski/go-metro"
 )
 
-var hlock sync.Mutex
-
 func getAltIndex(fp byte, i uint, numBuckets uint) uint {
-	bytes := []byte{0, 0, 0, 0, 0, 0, 0, fp}
-	hash := binary.LittleEndian.Uint64(bytes)
-	return uint(uint64(i)^(hash*0x5bd1e995)) % numBuckets
+	hash := uint(metro.Hash64([]byte{fp}, 1337))
+	return (i ^ hash) % numBuckets
 }
 
 func getFingerprint(data []byte) byte {
-	hlock.Lock()
-	defer hlock.Unlock()
-
-	fp := byte(metro.Hash64(data, 1337))
-	if fp == 0 {
-		fp += 7
-	}
+	fp := byte(metro.Hash64(data, 1335)%255 + 1)
 	return fp
 }
 

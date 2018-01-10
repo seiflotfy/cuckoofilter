@@ -38,13 +38,20 @@ func (cf *CuckooFilter) Lookup(data []byte) bool {
 	return b1.getFingerprintIndex(fp) > -1 || b2.getFingerprintIndex(fp) > -1
 }
 
+func randi(i1, i2 uint) uint {
+	if rand.Intn(2) == 0 {
+		return i1
+	}
+	return i2
+}
+
 //Insert inserts data into the counter and returns true upon success
 func (cf *CuckooFilter) Insert(data []byte) bool {
 	i1, i2, fp := getIndicesAndFingerprint(data, uint(len(cf.buckets)))
 	if cf.insert(fp, i1) || cf.insert(fp, i2) {
 		return true
 	}
-	return cf.reinsert(fp, i2)
+	return cf.reinsert(fp, randi(i1, i2))
 }
 
 //InsertUnique inserts data into the counter if not exists and returns true upon success
