@@ -15,29 +15,33 @@ This implementation uses a a static bucket size of 4 fingerprints and a fingerpr
 
 ## Example usage:
 ```go
+package main
 
+import "fmt"
 import "github.com/seiflotfy/cuckoofilter"
 
-cf := cuckoofilter.NewDefaultCuckooFilter()
-cf.InsertUnique([]byte{"geeky ogre"})
+func main() {
+  cf := cuckoofilter.NewDefaultCuckooFilter()
+  cf.InsertUnique([]byte("geeky ogre"))
 
-// Lookup a string (and it a miss) if it exists in the cuckoofilter
-cf.Lookup([]byte{"hello"})
+  // Lookup a string (and it a miss) if it exists in the cuckoofilter
+  cf.Lookup([]byte("hello"))
 
-count := cf.Count()
-// count == 1
+  count := cf.Count()
+  fmt.Println(count) // count == 1
 
-// Delete a string (and it a miss)
-cf.Delete([]byte{"hello"})
+  // Delete a string (and it a miss)
+  cf.Delete([]byte("hello"))
 
-count := cf.Count()
-// count == 1
+  count = cf.Count()
+  fmt.Println(count) // count == 1
 
-// Delete a string (a hit)
-cf.Delete([]byte{"geeky ogre"})
+  // Delete a string (a hit)
+  cf.Delete([]byte("geeky ogre"))
 
-count := cf.Count()
-// count == 0
+  count = cf.Count()
+  fmt.Println(count) // count == 0
+}
 ```
 
 ## Documentation:
