@@ -1,4 +1,4 @@
-package cuckoofilter
+package cuckoo
 
 type bucket [4]byte
 

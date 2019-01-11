@@ -19,7 +19,7 @@ SOFTWARE.
 */
 
 /*
-Package cuckoofilter provides a Cuckoo Filter, a Bloom filter replacement for approximated set-membership queries.
+Package cuckoo provides a Cuckoo Filter, a Bloom filter replacement for approximated set-membership queries.
 
 While Bloom filters are well-known space-efficient data structures to serve queries like "if item x is in a set?", they do not support deletion. Their variances to enable deletion (like counting Bloom filters) usually require much more space.
 
@@ -32,4 +32,4 @@ For details about the algorithm and citations please use this article:
 
 Note:
 This implementation uses a a static bucket size of 4 fingerprints and a fingerprint size of 1 byte based on my understanding of an optimal bucket/fingerprint/size ratio from the aforementioned paper.*/
-package cuckoofilter
+package cuckoo
