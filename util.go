@@ -1,7 +1,7 @@
-package cuckoofilter
+package cuckoo
 
 import (
-	"github.com/dgryski/go-metro"
+	metro "github.com/dgryski/go-metro"
 )
 
 func getAltIndex(fp byte, i uint, numBuckets uint) uint {

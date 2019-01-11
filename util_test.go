@@ -1,12 +1,10 @@
-package cuckoofilter
+package cuckoo
 
 import (
 	"bufio"
 	"fmt"
 	"os"
 	"testing"
-
-	"github.com/leemcloughlin/gofarmhash"
 )
 
 func TestIndexAndFP(t *testing.T) {
