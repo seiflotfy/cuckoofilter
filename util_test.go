@@ -1,9 +1,9 @@
 package cuckoo
 
 import (
-	"bufio"
+	"crypto/rand"
 	"fmt"
-	"os"
+	"io"
 	"testing"
 )
 
@@ -20,21 +20,105 @@ func TestIndexAndFP(t *testing.T) {
 	}
 }
 
-func TestFarmhash(t *testing.T) {
-	fd, err := os.Open("/usr/share/dict/words")
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-	scanner := bufio.NewScanner(fd)
+func TestCap(t *testing.T)  {
+	const capacity = 10000
+	fmt.Println(getNextPow2(uint64(capacity)) / bucketSize)
+}
 
-	var values []string
-	for scanner.Scan() {
-		s := scanner.Text()
-		values = append(values, s)
+func TestInsert(t *testing.T) {
+	const cap = 10000
+	filter := NewFilter(cap)
+
+	var hash [32]byte
+	io.ReadFull(rand.Reader, hash[:])
+
+	for i := 0; i < 100; i++ {
+		filter.Insert(hash[:])
 	}
 
-	for _, v := range values {
-		farmhash.Hash64([]byte(v))
+	fmt.Println(filter.Count())
+}
+
+func TestFilter_Lookup(t *testing.T) {
+	const cap = 10000
+
+	filter := NewFilter(cap)
+	var hash [32]byte
+	var m = make(map[[32]byte]struct{})
+
+	for i := 0; i < cap; i++ {
+		io.ReadFull(rand.Reader, hash[:])
+		m[hash] = struct{}{}
+		filter.Insert(hash[:])
 	}
+
+	fmt.Println(len(m))
+
+	var lookFail int
+	for k := range m {
+		if !filter.Lookup(k[:]) {
+			lookFail++
+		}
+	}
+
+	fmt.Println(lookFail)
+}
+
+func TestReset(t *testing.T) {
+	const cap = 10000
+
+	filter := NewFilter(cap)
+	var hash [32]byte
+
+	var insertSuccess int
+	var fail int
+
+	for i := 0; i < 10 * cap; i++ {
+		io.ReadFull(rand.Reader, hash[:])
+
+		if filter.Insert(hash[:]) {
+			insertSuccess++
+		} else {
+			fail++
+			filter.Reset()
+		}
+	}
+
+	fmt.Println("insert success", insertSuccess)
+
+	fmt.Println("insert fail", fail)
+}
+
+func BenchmarkFilter_Reset(b *testing.B) {
+	const cap = 10000
+	filter := NewFilter(cap)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		filter.Reset()
+	}
+}
+
+func BenchmarkFilter_Insert(b *testing.B) {
+	const cap = 10000
+	filter := NewFilter(cap)
+
+	b.ResetTimer()
+
+	var hash [32]byte
+	for i := 0; i < b.N; i++ {
+		io.ReadFull(rand.Reader, hash[:])
+		filter.Insert(hash[:])
+	}
+}
+
+func TestBucket_Reset(t *testing.T)  {
+	var bkt bucket
+	for i := byte(0); i < bucketSize; i++ {
+		bkt[i] = i
+	}
+	fmt.Println(bkt)
+	bkt.reset()
+	fmt.Println(bkt)
 }

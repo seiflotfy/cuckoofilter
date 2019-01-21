@@ -35,6 +35,13 @@ func (cf *Filter) Lookup(data []byte) bool {
 	return b1.getFingerprintIndex(fp) > -1 || b2.getFingerprintIndex(fp) > -1
 }
 
+func (cf *Filter) Reset() {
+	for i := range cf.buckets {
+		cf.buckets[i].reset()
+	}
+	cf.count = 0
+}
+
 func randi(i1, i2 uint) uint {
 	if rand.Intn(2) == 0 {
 		return i1

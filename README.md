@@ -21,7 +21,7 @@ import "fmt"
 import "github.com/seiflotfy/cuckoofilter"
 
 func main() {
-  cf := cuckoofilter.NewDefaultCuckooFilter()
+  cf := cuckoo.NewFilter(1000)
   cf.InsertUnique([]byte("geeky ogre"))
 
   // Lookup a string (and it a miss) if it exists in the cuckoofilter
@@ -41,6 +41,8 @@ func main() {
 
   count = cf.Count()
   fmt.Println(count) // count == 0
+  
+  cf.Reset()    // reset
 }
 ```
 
