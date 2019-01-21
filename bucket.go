@@ -1,9 +1,9 @@
 package cuckoo
 
-type bucket [4]byte
+type bucket [bucketSize]byte
 
 const (
-	nullFp     = byte(0)
+	nullFp     = 0
 	bucketSize = 4
 )
 
@@ -34,4 +34,10 @@ func (b *bucket) getFingerprintIndex(fp byte) int {
 		}
 	}
 	return -1
+}
+
+func (b *bucket) reset() {
+	for i := range b {
+		b[i] = nullFp
+	}
 }
