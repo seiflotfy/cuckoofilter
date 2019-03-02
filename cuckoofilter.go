@@ -7,7 +7,7 @@ import (
 
 const maxCuckooCount = 500
 
-// Filter is a probabalistic counter
+// Filter is a probabilistic counter
 type Filter struct {
 	buckets []bucket
 	count   uint
@@ -124,8 +124,8 @@ func (cf *Filter) Encode() []byte {
 // Decode returns a Cuckoofilter from a byte slice
 func Decode(bytes []byte) (*Filter, error) {
 	var count uint
-	if len(bytes)%4 != 0 {
-		return nil, fmt.Errorf("expected bytes to be multiuple of 4, got %d", len(bytes))
+	if len(bytes)%bucketSize != 0 {
+		return nil, fmt.Errorf("expected bytes to be multiple of %d, got %d", bucketSize, len(bytes))
 	}
 	buckets := make([]bucket, len(bytes)/4)
 	for i, b := range buckets {
