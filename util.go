@@ -5,8 +5,8 @@ import (
 )
 
 func getAltIndex(fp byte, i uint, numBuckets uint) uint {
-	hash := uint(metro.Hash64([]byte{fp}, 1337))
-	return (i ^ hash) % numBuckets
+	hash := (uint(metro.Hash64([]byte{fp}, 1337))) % numBuckets
+	return (i % numBuckets) ^ hash
 }
 
 func getFingerprint(data []byte) byte {
