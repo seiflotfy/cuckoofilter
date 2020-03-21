@@ -4,14 +4,16 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
+	"math/bits"
 	"testing"
 )
 
 func TestIndexAndFP(t *testing.T) {
 	data := []byte("seif")
-	i1, i2, fp := getIndicesAndFingerprint(data, 1024)
-	i11 := getAltIndex(fp, i2, 1024)
-	i22 := getAltIndex(fp, i1, 1024)
+	bucketPow := uint(bits.TrailingZeros(1024))
+	i1, i2, fp := getIndicesAndFingerprint(data, bucketPow)
+	i11 := getAltIndex(fp, i2, bucketPow)
+	i22 := getAltIndex(fp, i1, bucketPow)
 	if i1 != i11 {
 		t.Errorf("Expected i1 == i11, instead %d != %d", i1, i11)
 	}
@@ -20,7 +22,7 @@ func TestIndexAndFP(t *testing.T) {
 	}
 }
 
-func TestCap(t *testing.T)  {
+func TestCap(t *testing.T) {
 	const capacity = 10000
 	fmt.Println(getNextPow2(uint64(capacity)) / bucketSize)
 }
@@ -73,7 +75,7 @@ func TestReset(t *testing.T) {
 	var insertSuccess int
 	var fail int
 
-	for i := 0; i < 10 * cap; i++ {
+	for i := 0; i < 10*cap; i++ {
 		io.ReadFull(rand.Reader, hash[:])
 
 		if filter.Insert(hash[:]) {
@@ -113,7 +115,24 @@ func BenchmarkFilter_Insert(b *testing.B) {
 	}
 }
 
-func TestBucket_Reset(t *testing.T)  {
+func BenchmarkFilter_Lookup(b *testing.B) {
+	const cap = 10000
+	filter := NewFilter(cap)
+
+	var hash [32]byte
+	for i := 0; i < 10000; i++ {
+		io.ReadFull(rand.Reader, hash[:])
+		filter.Insert(hash[:])
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		io.ReadFull(rand.Reader, hash[:])
+		filter.Lookup(hash[:])
+	}
+}
+
+func TestBucket_Reset(t *testing.T) {
 	var bkt bucket
 	for i := byte(0); i < bucketSize; i++ {
 		bkt[i] = i

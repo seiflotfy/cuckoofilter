@@ -2,6 +2,7 @@ package cuckoo
 
 import (
 	"fmt"
+	"math/bits"
 	"math/rand"
 )
 
@@ -9,8 +10,9 @@ const maxCuckooCount = 500
 
 // Filter is a probabilistic counter
 type Filter struct {
-	buckets []bucket
-	count   uint
+	buckets   []bucket
+	count     uint
+	bucketPow uint
 }
 
 // NewFilter returns a new cuckoofilter with a given capacity.
@@ -25,12 +27,16 @@ func NewFilter(capacity uint) *Filter {
 	for i := range buckets {
 		buckets[i] = [bucketSize]byte{}
 	}
-	return &Filter{buckets, 0}
+	return &Filter{
+		buckets:   buckets,
+		count:     0,
+		bucketPow: uint(bits.TrailingZeros(capacity)),
+	}
 }
 
 // Lookup returns true if data is in the counter
 func (cf *Filter) Lookup(data []byte) bool {
-	i1, i2, fp := getIndicesAndFingerprint(data, uint(len(cf.buckets)))
+	i1, i2, fp := getIndicesAndFingerprint(data, cf.bucketPow)
 	b1, b2 := cf.buckets[i1], cf.buckets[i2]
 	return b1.getFingerprintIndex(fp) > -1 || b2.getFingerprintIndex(fp) > -1
 }
@@ -51,7 +57,7 @@ func randi(i1, i2 uint) uint {
 
 // Insert inserts data into the counter and returns true upon success
 func (cf *Filter) Insert(data []byte) bool {
-	i1, i2, fp := getIndicesAndFingerprint(data, uint(len(cf.buckets)))
+	i1, i2, fp := getIndicesAndFingerprint(data, cf.bucketPow)
 	if cf.insert(fp, i1) || cf.insert(fp, i2) {
 		return true
 	}
@@ -82,7 +88,7 @@ func (cf *Filter) reinsert(fp byte, i uint) bool {
 		cf.buckets[i][j] = oldfp
 
 		// look in the alternate location for that random element
-		i = getAltIndex(fp, i, uint(len(cf.buckets)))
+		i = getAltIndex(fp, i, cf.bucketPow)
 		if cf.insert(fp, i) {
 			return true
 		}
@@ -92,7 +98,7 @@ func (cf *Filter) reinsert(fp byte, i uint) bool {
 
 // Delete data from counter if exists and return if deleted or not
 func (cf *Filter) Delete(data []byte) bool {
-	i1, i2, fp := getIndicesAndFingerprint(data, uint(len(cf.buckets)))
+	i1, i2, fp := getIndicesAndFingerprint(data, cf.bucketPow)
 	return cf.delete(fp, i1) || cf.delete(fp, i2)
 }
 
@@ -138,7 +144,8 @@ func Decode(bytes []byte) (*Filter, error) {
 		}
 	}
 	return &Filter{
-		buckets: buckets,
-		count:   count,
+		buckets:   buckets,
+		count:     count,
+		bucketPow: uint(bits.TrailingZeros(uint(len(buckets)))),
 	}, nil
 }
