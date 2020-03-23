@@ -4,9 +4,24 @@ import (
 	metro "github.com/dgryski/go-metro"
 )
 
-func getAltIndex(fp byte, i uint, numBuckets uint) uint {
-	hash := (uint(metro.Hash64([]byte{fp}, 1337))) % numBuckets
-	return (i % numBuckets) ^ hash
+var (
+	altHash = [256]uint{}
+	masks   = [65]uint{}
+)
+
+func init() {
+	for i := 0; i < 256; i++ {
+		altHash[i] = (uint(metro.Hash64([]byte{byte(i)}, 1337)))
+	}
+	for i := 0; i <= 64; i++ {
+		masks[i] = (1 << i) - 1
+	}
+}
+
+func getAltIndex(fp byte, i uint, bucketPow uint) uint {
+	mask := masks[bucketPow]
+	hash := altHash[fp] & mask
+	return (i & mask) ^ hash
 }
 
 func getFingerprint(data []byte) byte {
@@ -15,11 +30,11 @@ func getFingerprint(data []byte) byte {
 }
 
 // getIndicesAndFingerprint returns the 2 bucket indices and fingerprint to be used
-func getIndicesAndFingerprint(data []byte, numBuckets uint) (uint, uint, byte) {
+func getIndicesAndFingerprint(data []byte, bucketPow uint) (uint, uint, byte) {
 	hash := metro.Hash64(data, 1337)
 	f := getFingerprint(data)
-	i1 := uint(hash) % numBuckets
-	i2 := getAltIndex(f, i1, numBuckets)
+	i1 := uint(hash) & masks[bucketPow]
+	i2 := getAltIndex(f, i1, bucketPow)
 	return i1, i2, f
 }
 
