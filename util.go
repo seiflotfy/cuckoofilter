@@ -13,7 +13,7 @@ func init() {
 	for i := 0; i < 256; i++ {
 		altHash[i] = (uint(metro.Hash64([]byte{byte(i)}, 1337)))
 	}
-	for i := 0; i <= 64; i++ {
+	for i := uint(0); i <= 64; i++ {
 		masks[i] = (1 << i) - 1
 	}
 }
