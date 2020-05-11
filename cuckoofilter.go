@@ -24,9 +24,6 @@ func NewFilter(capacity uint) *Filter {
 		capacity = 1
 	}
 	buckets := make([]bucket, capacity)
-	for i := range buckets {
-		buckets[i] = [bucketSize]byte{}
-	}
 	return &Filter{
 		buckets:   buckets,
 		count:     0,
