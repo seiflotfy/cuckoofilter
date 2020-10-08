@@ -24,16 +24,18 @@ func getAltIndex(fp byte, i uint, bucketPow uint) uint {
 	return (i & mask) ^ hash
 }
 
-func getFingerprint(data []byte) byte {
-	fp := byte(metro.Hash64(data, 1335)%255 + 1)
+func getFingerprint(hash uint64) byte {
+	// Use least significant bits for fingerprint.
+	fp := byte(hash%255 + 1)
 	return fp
 }
 
 // getIndicesAndFingerprint returns the 2 bucket indices and fingerprint to be used
 func getIndicesAndFingerprint(data []byte, bucketPow uint) (uint, uint, byte) {
 	hash := metro.Hash64(data, 1337)
-	f := getFingerprint(data)
-	i1 := uint(hash) & masks[bucketPow]
+	f := getFingerprint(hash)
+	// Use most significant bits for deriving index.
+	i1 := uint(hash>>32) & masks[bucketPow]
 	i2 := getAltIndex(f, i1, bucketPow)
 	return i1, i2, f
 }
