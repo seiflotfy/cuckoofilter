@@ -10,8 +10,20 @@ For details about the algorithm and citations please use this article for now
 
 ["Cuckoo Filter: Better Than Bloom" by Bin Fan, Dave Andersen and Michael Kaminsky](https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf)
 
-## Note
-This implementation uses a a static bucket size of 4 fingerprints and a fingerprint size of 1 byte based on my understanding of an optimal bucket/fingerprint/size ratio from the aforementioned paper.
+## Implementation details
+
+The paper cited above leaves several parameters to choose. In this implementation
+
+1. Every element has 2 possible bucket indices
+2. Buckets have a static size of 4 fingerprints
+3. Fingerprints have a static size of 8 bits
+
+1 and 2 are suggested to be the optimum by the authors. The choice of 3 comes down to the desired false positive rate. Given a target false positive rate of `r` and a bucket size `b`, they suggest choosing the fingerprint size `f` using
+
+    f >= log2(2b/r) bits
+
+With the 8 bit fingerprint size in this repository, you can expect `r ~= 0.03`.
+[Other implementations](https://github.com/panmari/cuckoofilter) use 16 bit, which correspond to a false positive rate of `r ~= 0.0001`.
 
 ## Example usage:
 ```go
