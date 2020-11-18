@@ -21,7 +21,7 @@ type option func(*ScalableCuckooFilter)
 
 type Store struct {
 	Bytes      [][]byte
-	loadFactor float32
+	LoadFactor float32
 }
 
 /*
@@ -107,7 +107,7 @@ func (sf *ScalableCuckooFilter) Encode() []byte {
 	}
 	store := &Store{
 		Bytes:      slice,
-		loadFactor: sf.loadFactor,
+		LoadFactor: sf.loadFactor,
 	}
 	buf := bytes.NewBuffer(nil)
 	enc := gob.NewEncoder(buf)
@@ -141,7 +141,7 @@ func DecodeScalableFilter(fBytes []byte) (*ScalableCuckooFilter, error) {
 	instance := NewScalableCuckooFilter(func(filter *ScalableCuckooFilter) {
 		filter.filters = make([]*Filter, filterSize)
 	}, func(filter *ScalableCuckooFilter) {
-		filter.loadFactor = store.loadFactor
+		filter.loadFactor = store.LoadFactor
 	})
 	for i, oneBytes := range store.Bytes {
 		filter, err := Decode(oneBytes)

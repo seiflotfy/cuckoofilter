@@ -27,13 +27,16 @@ func TestNormalUse(t *testing.T) {
 }
 
 func TestScalableCuckooFilter_DecodeEncode(t *testing.T) {
-	filter := NewScalableCuckooFilter()
+	filter := NewScalableCuckooFilter(func(filter *ScalableCuckooFilter) {
+		filter.loadFactor = 0.8
+	})
 	for i := 0; i < 100000; i++ {
 		filter.Insert([]byte("NewScalableCuckooFilter_" + strconv.Itoa(i)))
 	}
 	bytes := filter.Encode()
 	decodeFilter, err := DecodeScalableFilter(bytes)
 	assert.Nil(t, err)
+	assert.Equal(t, decodeFilter.loadFactor, float32(0.8))
 	b := decodeFilter.Lookup([]byte("NewScalableCuckooFilter_233"))
 	assert.True(t, b)
 	for i, f := range decodeFilter.filters {
