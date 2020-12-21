@@ -13,6 +13,7 @@ type Filter struct {
 	buckets   []bucket
 	count     uint
 	bucketPow uint
+	capacity  uint
 }
 
 // NewFilter returns a new cuckoofilter with a given capacity.
@@ -28,6 +29,7 @@ func NewFilter(capacity uint) *Filter {
 		buckets:   buckets,
 		count:     0,
 		bucketPow: uint(bits.TrailingZeros(capacity)),
+		capacity:  capacity,
 	}
 }
 
