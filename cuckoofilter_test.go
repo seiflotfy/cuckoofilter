@@ -2,7 +2,6 @@ package cuckoo
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -12,8 +11,7 @@ func TestInsertion(t *testing.T) {
 	cf := NewFilter(1000000)
 	fd, err := os.Open("/usr/share/dict/words")
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		panic(err)
 	}
 	scanner := bufio.NewScanner(fd)
 
@@ -45,8 +43,8 @@ func TestInsertion(t *testing.T) {
 func TestEncodeDecode(t *testing.T) {
 	cf := NewFilter(8)
 	cf.buckets = []bucket{
-		[4]byte{1, 2, 3, 4},
-		[4]byte{5, 6, 7, 8},
+		[4]fingerprint{1, 2, 3, 4},
+		[4]fingerprint{5, 6, 7, 8},
 	}
 	cf.count = 8
 	bytes := cf.Encode()

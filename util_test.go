@@ -2,29 +2,28 @@ package cuckoo
 
 import (
 	"crypto/rand"
-	"fmt"
 	"io"
 	"math/bits"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIndexAndFP(t *testing.T) {
 	data := []byte("seif")
 	bucketPow := uint(bits.TrailingZeros(1024))
-	i1, i2, fp := getIndicesAndFingerprint(data, bucketPow)
+	i1, fp := getIndexAndFingerprint(data, bucketPow)
+	i2 := getAltIndex(fp, i1, bucketPow)
 	i11 := getAltIndex(fp, i2, bucketPow)
-	i22 := getAltIndex(fp, i1, bucketPow)
-	if i1 != i11 {
-		t.Errorf("Expected i1 == i11, instead %d != %d", i1, i11)
-	}
-	if i2 != i22 {
-		t.Errorf("Expected i2 == i22, instead %d != %d", i2, i22)
-	}
+	i22 := getAltIndex(fp, i11, bucketPow)
+	assert.EqualValues(t, i11, i1)
+	assert.EqualValues(t, i22, i2)
 }
 
 func TestCap(t *testing.T) {
 	const capacity = 10000
-	fmt.Println(getNextPow2(uint64(capacity)) / bucketSize)
+	res := getNextPow2(uint64(capacity)) / bucketSize
+	assert.EqualValues(t, res, 4096)
 }
 
 func TestInsert(t *testing.T) {
@@ -38,15 +37,17 @@ func TestInsert(t *testing.T) {
 		filter.Insert(hash[:])
 	}
 
-	fmt.Println(filter.Count())
+	assert.EqualValues(t, filter.Count(), 8)
 }
 
 func TestFilter_Lookup(t *testing.T) {
 	const cap = 10000
 
-	filter := NewFilter(cap)
-	var hash [32]byte
-	var m = make(map[[32]byte]struct{})
+	var (
+		m      = make(map[[32]byte]struct{})
+		filter = NewFilter(cap)
+		hash   [32]byte
+	)
 
 	for i := 0; i < cap; i++ {
 		io.ReadFull(rand.Reader, hash[:])
@@ -54,7 +55,7 @@ func TestFilter_Lookup(t *testing.T) {
 		filter.Insert(hash[:])
 	}
 
-	fmt.Println(len(m))
+	assert.EqualValues(t, len(m), 10000)
 
 	var lookFail int
 	for k := range m {
@@ -63,17 +64,18 @@ func TestFilter_Lookup(t *testing.T) {
 		}
 	}
 
-	fmt.Println(lookFail)
+	assert.EqualValues(t, lookFail, 0)
 }
 
 func TestReset(t *testing.T) {
 	const cap = 10000
 
-	filter := NewFilter(cap)
-	var hash [32]byte
-
-	var insertSuccess int
-	var fail int
+	var (
+		filter        = NewFilter(cap)
+		hash          [32]byte
+		insertSuccess int
+		insertFails   int
+	)
 
 	for i := 0; i < 10*cap; i++ {
 		io.ReadFull(rand.Reader, hash[:])
@@ -81,14 +83,13 @@ func TestReset(t *testing.T) {
 		if filter.Insert(hash[:]) {
 			insertSuccess++
 		} else {
-			fail++
+			insertFails++
 			filter.Reset()
 		}
 	}
 
-	fmt.Println("insert success", insertSuccess)
-
-	fmt.Println("insert fail", fail)
+	assert.EqualValues(t, insertSuccess, 99994)
+	assert.EqualValues(t, insertFails, 6)
 }
 
 func BenchmarkFilter_Reset(b *testing.B) {
@@ -135,9 +136,10 @@ func BenchmarkFilter_Lookup(b *testing.B) {
 func TestBucket_Reset(t *testing.T) {
 	var bkt bucket
 	for i := byte(0); i < bucketSize; i++ {
-		bkt[i] = i
+		bkt[i] = fingerprint(i)
 	}
-	fmt.Println(bkt)
 	bkt.reset()
-	fmt.Println(bkt)
+	for _, val := range bkt {
+		assert.EqualValues(t, 0, val)
+	}
 }

@@ -35,11 +35,15 @@ func NewFilter(capacity uint) *Filter {
 
 // Lookup returns true if data is in the counter
 func (cf *Filter) Lookup(data []byte) bool {
-	i1, i2, fp := getIndicesAndFingerprint(data, cf.bucketPow)
-	b1, b2 := cf.buckets[i1], cf.buckets[i2]
-	return b1.getFingerprintIndex(fp) > -1 || b2.getFingerprintIndex(fp) > -1
+	i1, fp := getIndexAndFingerprint(data, cf.bucketPow)
+	if cf.buckets[i1].getFingerprintIndex(fp) > -1 {
+		return true
+	}
+	i2 := getAltIndex(fp, i1, cf.bucketPow)
+	return cf.buckets[i2].getFingerprintIndex(fp) > -1
 }
 
+// Reset ...
 func (cf *Filter) Reset() {
 	for i := range cf.buckets {
 		cf.buckets[i].reset()
@@ -56,8 +60,12 @@ func randi(i1, i2 uint) uint {
 
 // Insert inserts data into the counter and returns true upon success
 func (cf *Filter) Insert(data []byte) bool {
-	i1, i2, fp := getIndicesAndFingerprint(data, cf.bucketPow)
-	if cf.insert(fp, i1) || cf.insert(fp, i2) {
+	i1, fp := getIndexAndFingerprint(data, cf.bucketPow)
+	if cf.insert(fp, i1) {
+		return true
+	}
+	i2 := getAltIndex(fp, i1, cf.bucketPow)
+	if cf.insert(fp, i2) {
 		return true
 	}
 	return cf.reinsert(fp, randi(i1, i2))
@@ -71,7 +79,7 @@ func (cf *Filter) InsertUnique(data []byte) bool {
 	return cf.Insert(data)
 }
 
-func (cf *Filter) insert(fp byte, i uint) bool {
+func (cf *Filter) insert(fp fingerprint, i uint) bool {
 	if cf.buckets[i].insert(fp) {
 		cf.count++
 		return true
@@ -79,7 +87,7 @@ func (cf *Filter) insert(fp byte, i uint) bool {
 	return false
 }
 
-func (cf *Filter) reinsert(fp byte, i uint) bool {
+func (cf *Filter) reinsert(fp fingerprint, i uint) bool {
 	for k := 0; k < maxCuckooCount; k++ {
 		j := rand.Intn(bucketSize)
 		oldfp := fp
@@ -97,11 +105,15 @@ func (cf *Filter) reinsert(fp byte, i uint) bool {
 
 // Delete data from counter if exists and return if deleted or not
 func (cf *Filter) Delete(data []byte) bool {
-	i1, i2, fp := getIndicesAndFingerprint(data, cf.bucketPow)
-	return cf.delete(fp, i1) || cf.delete(fp, i2)
+	i1, fp := getIndexAndFingerprint(data, cf.bucketPow)
+	if cf.delete(fp, i1) {
+		return true
+	}
+	i2 := getAltIndex(fp, i1, cf.bucketPow)
+	return cf.delete(fp, i2)
 }
 
-func (cf *Filter) delete(fp byte, i uint) bool {
+func (cf *Filter) delete(fp fingerprint, i uint) bool {
 	if cf.buckets[i].delete(fp) {
 		cf.count--
 		return true
@@ -120,7 +132,7 @@ func (cf *Filter) Encode() []byte {
 	for i, b := range cf.buckets {
 		for j, f := range b {
 			index := (i * len(b)) + j
-			bytes[index] = f
+			bytes[index] = byte(f)
 		}
 	}
 	return bytes
@@ -137,7 +149,7 @@ func Decode(bytes []byte) (*Filter, error) {
 		for j := range b {
 			index := (i * len(b)) + j
 			if bytes[index] != 0 {
-				buckets[i][j] = bytes[index]
+				buckets[i][j] = fingerprint(bytes[index])
 				count++
 			}
 		}
@@ -145,6 +157,7 @@ func Decode(bytes []byte) (*Filter, error) {
 	return &Filter{
 		buckets:   buckets,
 		count:     count,
+		capacity:  uint(len(buckets)),
 		bucketPow: uint(bits.TrailingZeros(uint(len(buckets)))),
 	}, nil
 }
