@@ -92,47 +92,6 @@ func TestReset(t *testing.T) {
 	assert.EqualValues(t, insertFails, 6)
 }
 
-func BenchmarkFilter_Reset(b *testing.B) {
-	const cap = 10000
-	filter := NewFilter(cap)
-
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		filter.Reset()
-	}
-}
-
-func BenchmarkFilter_Insert(b *testing.B) {
-	const cap = 10000
-	filter := NewFilter(cap)
-
-	b.ResetTimer()
-
-	var hash [32]byte
-	for i := 0; i < b.N; i++ {
-		io.ReadFull(rand.Reader, hash[:])
-		filter.Insert(hash[:])
-	}
-}
-
-func BenchmarkFilter_Lookup(b *testing.B) {
-	const cap = 10000
-	filter := NewFilter(cap)
-
-	var hash [32]byte
-	for i := 0; i < 10000; i++ {
-		io.ReadFull(rand.Reader, hash[:])
-		filter.Insert(hash[:])
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		io.ReadFull(rand.Reader, hash[:])
-		filter.Lookup(hash[:])
-	}
-}
-
 func TestBucket_Reset(t *testing.T) {
 	var bkt bucket
 	for i := byte(0); i < bucketSize; i++ {

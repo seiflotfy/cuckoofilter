@@ -13,7 +13,6 @@ type Filter struct {
 	buckets   []bucket
 	count     uint
 	bucketPow uint
-	capacity  uint
 }
 
 // NewFilter returns a new cuckoofilter with a given capacity.
@@ -29,7 +28,6 @@ func NewFilter(capacity uint) *Filter {
 		buckets:   buckets,
 		count:     0,
 		bucketPow: uint(bits.TrailingZeros(capacity)),
-		capacity:  capacity,
 	}
 }
 
@@ -115,7 +113,9 @@ func (cf *Filter) Delete(data []byte) bool {
 
 func (cf *Filter) delete(fp fingerprint, i uint) bool {
 	if cf.buckets[i].delete(fp) {
-		cf.count--
+		if cf.count > 0 {
+			cf.count--
+		}
 		return true
 	}
 	return false
@@ -157,7 +157,6 @@ func Decode(bytes []byte) (*Filter, error) {
 	return &Filter{
 		buckets:   buckets,
 		count:     count,
-		capacity:  uint(len(buckets)),
 		bucketPow: uint(bits.TrailingZeros(uint(len(buckets)))),
 	}, nil
 }

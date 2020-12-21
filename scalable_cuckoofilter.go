@@ -60,7 +60,7 @@ func (sf *ScalableCuckooFilter) Reset() {
 func (sf *ScalableCuckooFilter) Insert(data []byte) bool {
 	needScale := false
 	lastFilter := sf.filters[len(sf.filters)-1]
-	if (float32(lastFilter.count) / float32(lastFilter.capacity)) > sf.loadFactor {
+	if (float32(lastFilter.count) / float32(len(lastFilter.buckets))) > sf.loadFactor {
 		needScale = true
 	} else {
 		b := lastFilter.Insert(data)
@@ -69,7 +69,7 @@ func (sf *ScalableCuckooFilter) Insert(data []byte) bool {
 	if !needScale {
 		return true
 	}
-	newFilter := NewFilter(sf.scaleFactor(lastFilter.capacity))
+	newFilter := NewFilter(sf.scaleFactor(uint(len(lastFilter.buckets))))
 	sf.filters = append(sf.filters, newFilter)
 	return newFilter.Insert(data)
 }

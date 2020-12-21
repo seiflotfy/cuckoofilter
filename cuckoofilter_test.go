@@ -2,6 +2,8 @@ package cuckoo
 
 import (
 	"bufio"
+	"crypto/rand"
+	"io"
 	"os"
 	"reflect"
 	"testing"
@@ -54,5 +56,46 @@ func TestEncodeDecode(t *testing.T) {
 	}
 	if !reflect.DeepEqual(cf, ncf) {
 		t.Errorf("Expected %v, got %v", cf, ncf)
+	}
+}
+
+func BenchmarkFilter_Reset(b *testing.B) {
+	const cap = 10000
+	filter := NewFilter(cap)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		filter.Reset()
+	}
+}
+
+func BenchmarkFilter_Insert(b *testing.B) {
+	const cap = 10000
+	filter := NewFilter(cap)
+
+	b.ResetTimer()
+
+	var hash [32]byte
+	for i := 0; i < b.N; i++ {
+		io.ReadFull(rand.Reader, hash[:])
+		filter.Insert(hash[:])
+	}
+}
+
+func BenchmarkFilter_Lookup(b *testing.B) {
+	const cap = 10000
+	filter := NewFilter(cap)
+
+	var hash [32]byte
+	for i := 0; i < 10000; i++ {
+		io.ReadFull(rand.Reader, hash[:])
+		filter.Insert(hash[:])
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		io.ReadFull(rand.Reader, hash[:])
+		filter.Lookup(hash[:])
 	}
 }
