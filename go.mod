@@ -1,4 +1,4 @@
-module github.com/seven4x/cuckoofilter
+module github.com/seiflotfy/cuckoofilter
 
 go 1.15
 
