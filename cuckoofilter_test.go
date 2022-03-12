@@ -59,6 +59,16 @@ func TestEncodeDecode(t *testing.T) {
 	}
 }
 
+func TestDecode(t *testing.T) {
+	ncf, err := Decode([]byte(""))
+	if err == nil {
+		t.Errorf("Expected err, got nil")
+	}
+	if ncf != nil {
+		t.Errorf("Expected nil, got %v", ncf)
+	}
+}
+
 func BenchmarkFilter_Reset(b *testing.B) {
 	const cap = 10000
 	filter := NewFilter(cap)

@@ -144,6 +144,9 @@ func Decode(bytes []byte) (*Filter, error) {
 	if len(bytes)%bucketSize != 0 {
 		return nil, fmt.Errorf("expected bytes to be multiple of %d, got %d", bucketSize, len(bytes))
 	}
+	if len(bytes) == 0 {
+		return nil, fmt.Errorf("bytes can not be empty")
+	}
 	buckets := make([]bucket, len(bytes)/4)
 	for i, b := range buckets {
 		for j := range b {
