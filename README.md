@@ -30,7 +30,7 @@ With the 8 bit fingerprint size in this repository, you can expect `r ~= 0.03`.
 package main
 
 import "fmt"
-import "github.com/seiflotfy/cuckoofilter"
+import cuckoo "github.com/seiflotfy/cuckoofilter"
 
 func main() {
   cf := cuckoo.NewFilter(1000)
