@@ -32,7 +32,7 @@ func getFingerprint(hash uint64) byte {
 
 // getIndicesAndFingerprint returns the 2 bucket indices and fingerprint to be used
 func getIndexAndFingerprint(data []byte, bucketPow uint) (uint, fingerprint) {
-	hash := metro.Hash64(data, 1337)
+	hash := defaultHasher.Hash64(data)
 	fp := getFingerprint(hash)
 	// Use most significant bits for deriving index.
 	i1 := uint(hash>>32) & masks[bucketPow]
@@ -49,4 +49,23 @@ func getNextPow2(n uint64) uint {
 	n |= n >> 32
 	n++
 	return uint(n)
+}
+
+var defaultHasher Hasher = new(metrotHasher)
+
+func SetDefaultHasher(hasher Hasher) {
+	defaultHasher = hasher
+}
+
+type Hasher interface {
+	Hash64([]byte) uint64
+}
+
+var _ Hasher = new(metrotHasher)
+
+type metrotHasher struct{}
+
+func (h *metrotHasher) Hash64(data []byte) uint64 {
+	hash := metro.Hash64(data, 1337)
+	return hash
 }
